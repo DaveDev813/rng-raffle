@@ -1,6 +1,7 @@
 <template lang="pug">
 q-layout
-  h1 Hello World
+  q-page-container
+    router-view
 </template>
 
 <script setup lang="ts"></script>

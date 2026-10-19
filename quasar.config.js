@@ -41,11 +41,10 @@ export default defineConfig(function (ctx) {
     extras: ['roboto-font', 'material-icons'],
 
     build: {
-      // Match the Apache subdirectory used to serve the production PWA.
+      // Firebase Hosting serves dist/pwa at the site root.
       publicPath:
         ctx.prod && ctx.mode.pwa
-          ? import.meta.env.QUASAR_PUBLIC_PATH ||
-            '/SHORE_ALLGRADUATES/primaxisv2/frontend/dist/pwa/'
+          ? import.meta.env.QUASAR_PUBLIC_PATH || '/'
           : '/',
 
       env: {

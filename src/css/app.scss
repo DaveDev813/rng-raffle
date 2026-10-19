@@ -2,18 +2,7 @@
 
 @import 'quasar.variables';
 
-body,
-.q-page-container,
-.q-layout,
-.q-header {
-  background-image: $BGTile;
-  background-repeat: repeat;
-}
-
-.limitPageContent {
-  margin: 0 auto;
-  padding: 24px 5% 24px 5%;
-  background: $mainBG;
-  background-image: $BGTile;
-  background-repeat: repeat;
+body {
+  background: #000;
+  color: #fff;
 }
