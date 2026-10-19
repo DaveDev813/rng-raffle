@@ -1,7 +1,7 @@
 <template>
   <div class="raffle">
     <header class="raffle-header">
-      <span class="eyebrow">A little luck. A big moment.</span>
+      <!-- <span class="eyebrow">A little luck. A big moment.</span> -->
       <h1>It's your lucky number.</h1>
       <div class="range-badge">
         <span></span> Numbers 1–{{ store.maxNumber }}
@@ -129,7 +129,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useQuasar } from 'quasar';
 import { randomIndex, useRaffleStore } from '../stores/raffle-store';
 
@@ -167,6 +167,32 @@ const hint = computed(() => {
     ? 'One lucky number. One more reason to celebrate.'
     : 'Your next winner is just a click away.';
 });
+
+function handleDrawKeydown(event: KeyboardEvent) {
+  if (
+    event.key !== 'Enter' ||
+    event.repeat ||
+    event.isComposing ||
+    event.defaultPrevented ||
+    event.altKey ||
+    event.ctrlKey ||
+    event.metaKey ||
+    event.shiftKey
+  )
+    return;
+
+  const target = event.target;
+  if (
+    target instanceof Element &&
+    target.closest(
+      'input, textarea, select, button, a, [contenteditable], [role="dialog"]',
+    )
+  )
+    return;
+
+  event.preventDefault();
+  draw();
+}
 
 function draw() {
   if (isDrawing.value) return;
@@ -247,7 +273,12 @@ function particleStyle(index: number, burst: number) {
   };
 }
 
+onMounted(() => {
+  window.addEventListener('keydown', handleDrawKeydown);
+});
+
 onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleDrawKeydown);
   clearTimeout(drawTimer);
   clearTimeout(celebrationTimer);
 });
