@@ -41,7 +41,7 @@
             :class="`burst-${burst}`"
           >
             <i
-              v-for="particle in 20"
+              v-for="particle in 32"
               :key="particle"
               :style="particleStyle(particle, burst)"
             ></i>
@@ -162,7 +162,7 @@ function draw() {
   const reducedMotion = window.matchMedia(
     '(prefers-reduced-motion: reduce)',
   ).matches;
-  const steps = reducedMotion ? 1 : 36;
+  const steps = reducedMotion ? 1 : 56;
   let step = 0;
 
   function tick() {
@@ -183,7 +183,7 @@ function draw() {
     displayNumber.value = reducedMotion
       ? null
       : randomIndex(MAX_RAFFLE_NUMBER) + 1;
-    const delay = reducedMotion ? 350 : 40 + 650 * (step / (steps - 1)) ** 4;
+    const delay = reducedMotion ? 450 : 40 + 550 * (step / (steps - 1)) ** 4;
     step++;
     drawTimer = setTimeout(tick, delay);
   }
@@ -212,13 +212,13 @@ function sparkStyle(index: number) {
 }
 
 function particleStyle(index: number, burst: number) {
-  const angle = (index / 20) * Math.PI * 2;
-  const distance = 65 + (index % 3) * 20;
+  const angle = (index / 32) * Math.PI * 2;
+  const distance = 110 + (index % 3) * 30;
   return {
     '--x': `${Math.cos(angle) * distance}px`,
     '--y': `${Math.sin(angle) * distance}px`,
     '--delay': `${(burst - 1) * 0.25}s`,
-    '--color': ['#ffd687', '#ff9478', '#fff4d9', '#b0d9cd'][index % 4],
+    '--color': ['#ffd700', '#ffbf46', '#fff1a8', '#e8a52b'][index % 4],
   };
 }
 
@@ -387,7 +387,7 @@ button:disabled {
 .is-winner .number-caption {
   color: var(--gold);
   letter-spacing: 1px;
-  font-size: clamp(14px, 3.5cqw, 24px);
+  font-size: clamp(14px, 3.5cqw, 50px);
 }
 .is-drawing .orbit-two {
   animation: orbit-spin 15s linear infinite;
@@ -432,12 +432,14 @@ button:disabled {
 }
 .burst i {
   position: absolute;
-  width: 4px;
-  height: 4px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   opacity: 0;
   background: var(--color);
-  box-shadow: 0 0 7px var(--color);
+  box-shadow:
+    0 0 10px 2px var(--color),
+    0 0 22px #ffc24780;
   animation: firework 1.25s var(--delay) ease-out 2;
 }
 .winners-panel {
@@ -576,9 +578,11 @@ h2 span {
   }
   12% {
     opacity: 1;
+    transform: translate(calc(var(--x) * 0.2), calc(var(--y) * 0.2)) scale(1);
   }
   75% {
     opacity: 1;
+    transform: translate(calc(var(--x) * 0.9), calc(var(--y) * 0.9)) scale(0.7);
   }
   100% {
     opacity: 0;
