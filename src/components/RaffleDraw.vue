@@ -55,6 +55,14 @@
         }}</span>
       </div>
       <p class="draw-hint">{{ hint }}</p>
+      <q-btn
+        flat
+        round
+        :icon="audio.soundEnabled.value ? 'volume_up' : 'volume_off'"
+        :aria-label="audio.soundEnabled.value ? 'Mute sounds' : 'Enable sounds'"
+        :aria-pressed="audio.soundEnabled.value"
+        @click="audio.toggle"
+      />
       <button
         class="draw-button"
         :disabled="isDrawing || !store.availableNumbers.length"
@@ -132,7 +140,9 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useQuasar } from 'quasar';
 import { randomIndex, useRaffleStore } from '../stores/raffle-store';
+import { useRaffleAudio } from '../composables/useRaffleAudio';
 
+const audio = useRaffleAudio();
 const store = useRaffleStore();
 const maxNumber = ref(store.maxNumber);
 const $q = useQuasar();
@@ -198,6 +208,8 @@ function draw() {
   if (isDrawing.value) return;
   const winner = store.pickWinner();
   if (winner === null) return;
+  audio.stop();
+  audio.unlock();
   clearTimeout(celebrationTimer);
   celebrating.value = false;
   hasWinner.value = false;
@@ -217,6 +229,7 @@ function draw() {
       hasWinner.value = true;
       celebrationId.value++;
       celebrating.value = true;
+      audio.celebrate();
       announcement.value = `Winner: number ${winner}. ${store.winners.length} winners drawn.`;
       celebrationTimer = setTimeout(() => {
         celebrating.value = false;
@@ -224,6 +237,7 @@ function draw() {
       return;
     }
     // The rolling display is decorative; the winner is selected independently.
+    audio.tick();
     displayNumber.value = reducedMotion
       ? null
       : randomIndex(store.maxNumber) + 1;
@@ -249,6 +263,7 @@ function confirmReset() {
     cancel: true,
     ok: { label: 'New raffle', color: 'deep-orange' },
   }).onOk(() => {
+    audio.stop();
     clearTimeout(celebrationTimer);
     store.reset(nextMaxNumber);
     displayNumber.value = null;
