@@ -22,7 +22,7 @@
     "postinstall": "quasar prepare",
     "dev": "quasar dev",
     "build": "quasar build",
-    "devpwa": "quasar dev -m pwa",
+    "start": "quasar dev -m pwa",
     "buildpwa": "quasar build -m pwa",
     "generate:pwa-icons": "npm exec --yes --package @quasar/icongenie@4.0.0 -- icongenie generate -m pwa -i src-pwa/icon.png && rm -rf public/pwa-icons && mv public/icons public/pwa-icons",
     "postman-test": "npm exec --yes --package newman@6.2.2 -- newman run ../postman/API.postman_collection.json --environment ../postman/LOCAL_ENV.postman_environment.json",

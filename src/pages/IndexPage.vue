@@ -7,6 +7,4 @@ q-page.limitPageContent
       ClientSelect
 </template>
 
-<script setup lang="ts">
-import ClientSelect from '@/components/ClientSelect.vue';
-</script>
+<script setup lang="ts"></script>
