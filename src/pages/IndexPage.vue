@@ -19,9 +19,7 @@ q-page.index-page
         img.carousel-image.carousel-image--fill(:src="image" :alt="`Left gallery image ${index + 1}`")
 
   section.center-panel
-
-
-
+    RaffleDraw
   aside.side-panel(aria-label="Right image carousel")
     q-carousel.side-carousel(
       v-model="rightSlide"
@@ -43,6 +41,7 @@ q-page.index-page
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import RaffleDraw from '../components/RaffleDraw.vue';
 
 const leftSlide = ref(0);
 const rightSlide = ref(0);
@@ -76,8 +75,11 @@ const rightImages = Object.keys(rightImageModules)
 }
 
 .center-panel {
+  container-type: inline-size;
   width: 100%;
   overflow-wrap: anywhere;
+  background: radial-gradient(ellipse at 50% 35%, #2c2318 0%, #171512 65%);
+  border-inline: 1px solid #3a3025;
 }
 
 .side-carousel {
@@ -97,5 +99,15 @@ const rightImages = Object.keys(rightImageModules)
 
 .carousel-image--fill {
   object-fit: cover;
+}
+
+@media (max-width: 700px) {
+  .index-page {
+    grid-template-columns: 1fr;
+  }
+
+  .side-panel {
+    display: none;
+  }
 }
 </style>
