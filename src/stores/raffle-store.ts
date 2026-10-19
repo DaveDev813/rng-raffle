@@ -1,11 +1,13 @@
 import { defineStore } from 'pinia';
 
-export const MAX_RAFFLE_NUMBER = 100;
+export const DEFAULT_MAX_RAFFLE_NUMBER = 100;
 
 // Rejection sampling keeps every remaining ticket equally likely.
 export function randomIndex(length: number): number {
-  if (!Number.isInteger(length) || length < 1 || length > MAX_RAFFLE_NUMBER) {
-    throw new RangeError('The raffle pool must contain 1–100 numbers.');
+  if (!Number.isInteger(length) || length < 1 || length > 2 ** 32) {
+    throw new RangeError(
+      'The raffle pool must contain 1–4,294,967,296 numbers.',
+    );
   }
   const range = 2 ** 32;
   const limit = range - (range % length);
@@ -17,10 +19,13 @@ export function randomIndex(length: number): number {
 }
 
 export const useRaffleStore = defineStore('raffle', {
-  state: () => ({ winners: [] as number[] }),
+  state: () => ({
+    winners: [] as number[],
+    maxNumber: DEFAULT_MAX_RAFFLE_NUMBER,
+  }),
   getters: {
     availableNumbers: (state) =>
-      Array.from({ length: MAX_RAFFLE_NUMBER }, (_, index) => index + 1).filter(
+      Array.from({ length: state.maxNumber }, (_, index) => index + 1).filter(
         (number) => !state.winners.includes(number),
       ),
   },
@@ -32,9 +37,19 @@ export const useRaffleStore = defineStore('raffle', {
     recordWinner(number: number) {
       if (this.availableNumbers.includes(number)) this.winners.push(number);
     },
-    reset() {
+    reset(maxNumber = DEFAULT_MAX_RAFFLE_NUMBER) {
+      if (
+        !Number.isInteger(maxNumber) ||
+        maxNumber < 1 ||
+        maxNumber >= 2 ** 32
+      ) {
+        throw new RangeError(
+          'Enter a positive whole number below 4,294,967,296.',
+        );
+      }
+      this.maxNumber = maxNumber;
       this.winners = [];
     },
   },
-  persist: { pick: ['winners'] },
+  persist: { pick: ['winners', 'maxNumber'] },
 });

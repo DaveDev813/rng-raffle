@@ -4,7 +4,7 @@
       <span class="eyebrow">A little luck. A big moment.</span>
       <h1>It's your lucky number.</h1>
       <div class="range-badge">
-        <span></span> Numbers 1–{{ MAX_RAFFLE_NUMBER }}
+        <span></span> Numbers 1–{{ store.maxNumber }}
       </div>
     </header>
 
@@ -86,14 +86,23 @@
           <q-icon name="emoji_events" size="23px" aria-hidden="true" /> Winners
           <span>{{ store.winners.length }}</span>
         </h2>
-        <button
-          v-if="store.winners.length"
-          class="reset-button"
-          :disabled="isDrawing"
-          @click="confirmReset"
-        >
-          New raffle
-        </button>
+        <form class="raffle-controls" @submit.prevent="confirmReset">
+          <input
+            v-model.number="maxNumber"
+            class="max-number-input"
+            type="number"
+            min="1"
+            max="4294967295"
+            step="1"
+            required
+            aria-label="Maximum raffle number"
+            title="Maximum raffle number"
+            :disabled="isDrawing"
+          />
+          <button class="reset-button" :disabled="isDrawing" type="submit">
+            New raffle
+          </button>
+        </form>
       </div>
       <ol v-if="store.winners.length" class="winner-list">
         <li
@@ -120,15 +129,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref } from 'vue';
+import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { useQuasar } from 'quasar';
-import {
-  MAX_RAFFLE_NUMBER,
-  randomIndex,
-  useRaffleStore,
-} from '../stores/raffle-store';
+import { randomIndex, useRaffleStore } from '../stores/raffle-store';
 
 const store = useRaffleStore();
+const maxNumber = ref(store.maxNumber);
 const $q = useQuasar();
 const displayNumber = ref<number | null>(
   store.winners[store.winners.length - 1] ?? null,
@@ -140,6 +146,18 @@ const celebrationId = ref(0);
 const announcement = ref('');
 let drawTimer: ReturnType<typeof setTimeout> | undefined;
 let celebrationTimer: ReturnType<typeof setTimeout> | undefined;
+
+watch(maxNumber, (value) => {
+  const nextMaxNumber = Number(value);
+  if (
+    isDrawing.value ||
+    !Number.isInteger(nextMaxNumber) ||
+    nextMaxNumber < 1 ||
+    nextMaxNumber >= 2 ** 32
+  )
+    return;
+  store.maxNumber = nextMaxNumber;
+});
 
 const hint = computed(() => {
   if (isDrawing.value) return 'A little suspense… a little luck…';
@@ -182,7 +200,7 @@ function draw() {
     // The rolling display is decorative; the winner is selected independently.
     displayNumber.value = reducedMotion
       ? null
-      : randomIndex(MAX_RAFFLE_NUMBER) + 1;
+      : randomIndex(store.maxNumber) + 1;
     const delay = reducedMotion ? 450 : 40 + 550 * (step / (steps - 1)) ** 4;
     step++;
     drawTimer = setTimeout(tick, delay);
@@ -191,19 +209,26 @@ function draw() {
 }
 
 function confirmReset() {
+  if (isDrawing.value) return;
+  const nextMaxNumber = Number(maxNumber.value);
+  if (
+    !Number.isInteger(nextMaxNumber) ||
+    nextMaxNumber < 1 ||
+    nextMaxNumber >= 2 ** 32
+  )
+    return;
   $q.dialog({
     title: 'Start a new raffle?',
-    message:
-      'This clears the saved winners and puts all 100 numbers back in the draw.',
+    message: `This clears the saved winners and starts a draw with numbers 1–${nextMaxNumber}.`,
     cancel: true,
     ok: { label: 'New raffle', color: 'deep-orange' },
   }).onOk(() => {
     clearTimeout(celebrationTimer);
-    store.reset();
+    store.reset(nextMaxNumber);
     displayNumber.value = null;
     hasWinner.value = false;
     celebrating.value = false;
-    announcement.value = 'New raffle ready. All 100 numbers are available.';
+    announcement.value = `New raffle ready. All ${nextMaxNumber} numbers are available.`;
   });
 }
 
@@ -452,6 +477,7 @@ button:disabled {
 }
 .winners-heading {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
@@ -479,6 +505,28 @@ h2 span {
   background: #3c3224;
   color: var(--gold);
   font-size: 11px;
+}
+.raffle-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+.max-number-input {
+  width: 76px;
+  min-width: 0;
+  border: 1px solid #473a2d;
+  border-radius: 6px;
+  padding: 6px 8px;
+  background: #211c16;
+  color: #f8f0e6;
+  font: inherit;
+  font-size: 13px;
+  color-scheme: dark;
+}
+.max-number-input:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
 }
 .reset-button {
   border: 0;
